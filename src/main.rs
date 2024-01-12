@@ -12,14 +12,12 @@ mod gradient_descent {
 
 mod adam;
 
-use core::num;
-
 use nn::layer::layer::Layer;
 use nn::nn::nn::NeuralNetwork;
 use backtrace::Backtrace;
 use gradient_descent::obj::obj::GradientDescent;
-use gradient_descent::stochastic::stochastic::stochastic_vect;
-use gradient_descent::batch::batch::{batch, batch_vectorized};
+//use gradient_descent::stochastic::stochastic::stochastic_vect;
+//use gradient_descent::batch::batch::{batch, batch_vectorized};
 use adam::adam::Adam;
 use std::fs::OpenOptions;
 use std::io::{Write, Error};
@@ -126,20 +124,15 @@ fn main() {
         learning_rate
     );
 
-    let stepsize: f64 = 0.001;
-    let beta_1: f64 = 0.9;
-    let beta_2: f64 = 0.009;
-    let epsilon: f64 = 1e-8;
-    let default: bool = true;
     let gd_clone: GradientDescent = gd.clone();
     let mut adam: Adam = Adam::new(
         nn.clone(),
         gd_clone,
-        default,
-        stepsize,
-        beta_1,
-        beta_2,
-        epsilon
+        true,
+        None,
+        None,
+        None,
+        None
     );
 
     let epochs: usize = 100;

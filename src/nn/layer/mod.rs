@@ -27,7 +27,7 @@ pub mod layer {
             self.nodes[index].set_weights(weights, bias)
         }
 
-        /// override paramater is for forceful error adapation, sets the weights to a vector
+        /// set_zeros paramater is for forceful error adapation, sets the weights to a vector
         /// of 0s with a length of the layer size
         pub fn set_all_weights(&mut self, mut weights: Vec<f64>, biases: Vec<f64>, set_zeros: bool) {
             if self.num_nodes != weights.len() || biases.len() != 1 {

@@ -36,35 +36,54 @@ pub mod adam {
         /// beta_1 & beta_2: exponential decay rates for the moment estimates
         /// 
         /// epsilon: small constant used to avoid division by zero when calculating RMS of the gradients
-        pub fn new(nn: NeuralNetwork, gd: GradientDescent, default: bool, stepsize: f64, beta_1: f64, beta_2: f64, epsilon: f64) -> Adam {
-            if default {
-                let stepsize: f64 = 0.0001;
-                let beta_1: f64 = 0.9;
-                let beta_2: f64 = 0.999;
-                let epsilon: f64 = 1e-8;
-                println!("Loading default Adam parameters: alpha: {}, beta 1: {}, beta 2: {}, epsilon: {}", stepsize, beta_1, beta_2, epsilon);
-                Adam {
-                    nn,
-                    gd,
-                    stepsize,
-                    beta_1,
-                    beta_2,
-                    epsilon,
-                    m_b: 0.0,
-                    v_b: 0.0
-                }
+        pub fn new(
+            nn: NeuralNetwork,
+            gd: GradientDescent,
+            default: bool,
+            stepsize: Option<f64>,
+            beta_1: Option<f64>,
+            beta_2: Option<f64>,
+            epsilon: Option<f64>,
+        ) -> Adam {
+            let (stepsize, beta_1, beta_2, epsilon) = if default {
+                (
+                    Some(0.0001),
+                    Some(0.9),
+                    Some(0.999),
+                    Some(1e-8),
+                )
             } else {
-                println!("Using specified Adam parameters: alpha: {}, beta 1: {}, beta 2: {}, epsilon: {}", stepsize, beta_1, beta_2, epsilon);
-                Adam {
-                    nn,
-                    gd,
-                    stepsize,
-                    beta_1,
-                    beta_2,
-                    epsilon,
-                    m_b: 0.0,
-                    v_b: 0.0
-                }
+                (stepsize, beta_1, beta_2, epsilon)
+            };
+            let stepsize: f64 = stepsize.unwrap_or_else(|| {
+                println!("Warning: No stepsize provided; using default value.");
+                0.0001
+            });
+            let beta_1 = beta_1.unwrap_or_else(|| {
+                println!("Warning: No beta_1 provided; using default value.");
+                0.9
+            });
+            let beta_2 = beta_2.unwrap_or_else(|| {
+                println!("Warning: No beta_2 provided; using default value.");
+                0.999
+            });
+            let epsilon = epsilon.unwrap_or_else(|| {
+                println!("Warning: No epsilon provided; using default value.");
+                1e-8
+            });
+            println!(
+                "Loading Adam parameters: alpha: {}, beta 1: {}, beta 2: {}, epsilon: {}",
+                stepsize, beta_1, beta_2, epsilon
+            );
+            Adam {
+                nn,
+                gd,
+                stepsize,
+                beta_1,
+                beta_2,
+                epsilon,
+                m_b: 0.0,
+                v_b: 0.0,
             }
         }
 
