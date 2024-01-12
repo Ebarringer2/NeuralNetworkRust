@@ -59,12 +59,18 @@ pub mod obj {
             println!("Weights Start: {}", weights_start);
             println!("Weights End: {}", weights_end);
             println!("Bias Index: {}", bias_index);
-            let weights: Vec<Vec<f64>> = self.theta_vector[weights_start..weights_end]
-                .chunks(self.num_predictors)
-                .map(|chunk| chunk.to_vec())
-                .collect();
-            let bias: Vec<f64> = vec![self.theta_vector[bias_index]];
-            (weights, bias)
+            if weights_start < weights_end {
+                let weights: Vec<Vec<f64>> = self.theta_vector[weights_start..weights_end]
+                    .chunks(self.num_predictors)
+                    .map(|chunk| chunk.to_vec())
+                    .collect();
+                let bias: Vec<f64> = vec![self.theta_vector[bias_index]];
+                (weights, bias)
+            } else {
+                println!("Warning: Start greater than End.");
+                println!("Warning: Returning default values.");
+                (vec![vec![0.0; self.num_predictors]], vec![0.0])
+            }   
         }
 
         pub fn h(&self, X: Vec<f64>) -> f64 {

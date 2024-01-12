@@ -1,3 +1,5 @@
 /target
 *.lock
 .log.txt
+*.ps1
+.env

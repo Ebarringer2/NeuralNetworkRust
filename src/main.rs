@@ -20,18 +20,28 @@ use gradient_descent::obj::obj::GradientDescent;
 //use gradient_descent::batch::batch::{batch, batch_vectorized};
 use adam::adam::Adam;
 use std::fs::OpenOptions;
-use std::io::{Write, Error};
+use std::io::{Write, Error, ErrorKind};
 use rand::Rng;
+use std::env;
 
 fn file_save(data: String) -> Result<(), Error> {
-    let file_path = "../log.txt";
-    let mut file = OpenOptions::new()
-        .create(true)
-        .append(true)
-        .open(file_path)?;
-    file.write_all(data.as_bytes())?;
-    file.write(b"\n\n")?;
-    Ok(())
+    match env::var("LOG_PATH") {
+        Ok(val) => {
+            println!("accessed env var succesfully");
+            let mut file = OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open(val)?;
+            file.write_all(data.as_bytes())?;
+            file.write(b"\n\n")?;
+            Ok(())
+        }
+        Err(e) =>  {
+            println!("error fetching env var: {}", e);
+            Err(Error::new(ErrorKind::Other, "error fetching env var"))
+        }
+    }
+    
 }
 
 
@@ -150,7 +160,7 @@ fn main() {
     log_data.push_str(&format!("{:?}", gd.get_y()));
     file_save(log_data);
 
-    // view layers
+    // view original layers
     println!("\n\n");
     println!("OPTIMIZED LAYERS");
     nn.print_layers();
