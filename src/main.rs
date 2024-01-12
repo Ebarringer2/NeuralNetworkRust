@@ -24,7 +24,7 @@ use std::io::{Write, Error};
 use rand::Rng;
 
 fn file_save(data: String) -> Result<(), Error> {
-    let file_path = "C:/Users/ellio/OneDrive/Documents/GitHub/linear-regression/log.txt";
+    let file_path = "../log.txt";
     let mut file = OpenOptions::new()
         .create(true)
         .append(true)
