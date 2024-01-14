@@ -51,7 +51,7 @@ pub mod obj {
                 let (weights, bias) = self_clone.get_params_for_layer(i);
                 println!("Weights: {:#?}", weights);
                 println!("Bias: {:?}", bias);
-                layer.set_all_weights(weights, bias, true); // Modify to accept weights directly
+                layer.set_all_weights(weights, bias, true);
                 println!("Set layer weights: {:#?}", weights);
                 println!("Set layer bias: {:?}", bias);
             }
@@ -59,7 +59,7 @@ pub mod obj {
 
         pub fn get_params_for_layer(&self, layer_index: usize) -> (Vec<f64>, f64) {
             let weights: Vec<f64> = self.theta_matrix[layer_index].clone();
-            let bias_index: usize = layer_index; // Assuming bias is included in theta_matrix
+            let bias_index: usize = layer_index;
             let bias: f64 = self.theta_matrix[layer_index].last().cloned().unwrap_or(0.0);
             (weights, bias)
         }
@@ -67,14 +67,19 @@ pub mod obj {
         pub fn h(&self, X: Vec<f64>) -> f64 {
             let mut result: f64 = 0.0;
             for (i, x) in X.iter().enumerate() {
-                result += (self.theta_matrix[i] * x).clone()
+                result += self.theta_matrix[i].iter().map(|&theta| theta * x).sum::<f64>();
             }
             result + self.b
         }
 
         pub fn h_vectorized(&self, X: Vec<f64>) -> f64 {
-            self.theta_matrix.iter().zip(X.iter()).fold(0.0, |acc, (&theta, &x)| acc + theta * x) + self.b
+            self.theta_matrix
+                .iter()
+                .flat_map(|theta_row| theta_row.iter())
+                .zip(X.iter())
+                .fold(0.0, |acc, (&theta, &x)| acc + theta * x) + self.b
         }
+        
         
         pub fn h_given_params(&self, X: Vec<f64>, theta_matrix: Vec<f64>, b: f64) -> f64 {
             theta_matrix.iter().zip(X.iter()).fold(0.0, |acc, (&theta, &x)| acc + theta * x) + b
@@ -84,7 +89,7 @@ pub mod obj {
             self.b.clone()
         }
 
-        pub fn get_params(&self) -> Vec<f64> {
+        pub fn get_params(&self) -> Vec<Vec<f64>> {
             self.theta_matrix.clone()
         }
 
@@ -121,7 +126,7 @@ pub mod obj {
                     println!("EPOCH {} Calculated m_hat", i);
                     let v_hat: f64 = v[i] / (1.0 - beta_2_pow);
                     println!("EPOCH {} Calculated v_hat", i);
-                    self.theta_matrix[i] -= self.learning_rate * m_hat / (v_hat.sqrt() + adam.epsilon);
+                    self.theta_matrix[i].iter_mut().for_each(|theta| *theta -= self.learning_rate * m_hat / (v_hat.sqrt() + adam.epsilon));
                     println!("EPOCH {} Updated theta vector", i);
                 } else {
                     println!("Made it to break case");

@@ -29,20 +29,20 @@ pub mod layer {
 
         /// set_zeros paramater is for forceful error adapation, sets the weights to a vector
         /// of 0s with a length of the layer size
-        pub fn set_all_weights(&mut self, mut weights: Vec<f64>, biases: Vec<f64>, set_zeros: bool) {
-            if self.num_nodes != weights.len() || biases.len() != 1 {
+        pub fn set_all_weights(&mut self, mut weights: Vec<f64>, bias: f64, set_zeros: bool) {
+            if self.num_nodes != weights.len() {
                 if set_zeros {
                     println!("OVERRIDING: SETTING WEIGHTS TO VEC<0s>");
                     weights = vec![0.0; self.num_nodes]
                 } else {
                     println!("WEIGHTS len: {}", weights.len());
-                    println!("BIAS len: {}", biases.len());
+                    println!("BIAS: {}", bias);
                     println!("LAYER size: {}", self.num_nodes);
                     panic!("Weights and bias lists must match layer size!");
                 }
             }
             for i in 0..self.num_nodes {
-                self.nodes[i].set_weights(weights.clone(), biases[0]);
+                self.nodes[i].set_weights(weights.clone(), bias);
                 println!("Done setting weights for Node {}", i);
             }
         }
