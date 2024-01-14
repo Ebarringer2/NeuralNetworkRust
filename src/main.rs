@@ -148,7 +148,10 @@ fn main() {
     let epochs: usize = 100;
     adam.optimize(epochs);
     println!("\n\n\n");
-    println!("Final Weights: {:?}", gd.get_params());
+    println!("Final Weights: \n");
+    for i in 0..nn.num_layers {
+        println!("Layer {}: {:#?}", i, gd.get_params_for_layer(i))
+    }
     println!("Final Bias: {:?}", gd.get_y());
     println!("\n\n\n");
 
