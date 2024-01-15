@@ -5,13 +5,14 @@ pub mod layer {
     #[derive(Clone)]
     pub struct Layer {
         pub nodes: Vec<Node>,
-        pub num_nodes: usize
+        pub num_nodes: usize,
+        pub activation_function: String
     }
 
     impl Layer {
         
         /// Creates a new Layer object with a given number of nodes
-        pub fn new(num_nodes: usize, num_features: usize) -> Layer {
+        pub fn new(num_nodes: usize, num_features: usize, activation_function: String) -> Layer {
             let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
             let bias: f64 = rng.gen::<f64>();
             let nodes: Vec<Node> = (0..num_nodes).map(|_| {
@@ -21,6 +22,7 @@ pub mod layer {
             Layer {
                 nodes,
                 num_nodes,
+                activation_function
             }
         }
         pub fn set_weights(&mut self, index: usize, weights: Vec<f64>, bias: f64) {
@@ -54,7 +56,11 @@ pub mod layer {
                 if num_features != node.weights.len() {
                     panic!("Number of weights does not match number of features");
                 }
-                a_vector.push(node.sigmoid_actualize(input_layer.clone()));
+                if self.activation_function == "sigmoid".to_string() {
+                    a_vector.push(node.sigmoid_actualize(input_layer.clone()));
+                } else if self.activation_function == "reLU".to_string() {
+                    a_vector.push(node.reLU_activate(input_layer.clone()));
+                }
             }
             a_vector
         }

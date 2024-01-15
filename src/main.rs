@@ -76,15 +76,26 @@ fn main() {
     let b_2: f64 = 0.02;
     let b_3: f64 = 0.03;
 
-    let mut layer_1: Layer = Layer::new(4, w_1_flat.len());
+    let mut layer_1: Layer = Layer::new(
+        4,
+        w_1_flat.len(),
+        "reLU".to_string()
+    );
     println!("W Flat Len: {}", w_1_flat.len());
     //println!("B Flat Len: {}", b_1.len());
     layer_1.set_all_weights(w_1_flat, b_1, false);
-    let mut layer_2: Layer = Layer::new(4, w_2_flat.len());
+    let mut layer_2: Layer = Layer::new(
+        4, 
+        w_2_flat.len(),
+        "reLU".to_string()
+    );
     println!("W 2 Flat Len: {}", w_2_flat.len());
     //println!("B 2 Flat Len: {}", b_2.len());
     layer_2.set_all_weights(w_2_flat, b_2, false);
-    let mut layer_3: Layer = Layer::new(4, w_3_flat.len());
+    let mut layer_3: Layer = Layer::new(
+        4,
+         w_3_flat.len(),
+        "reLU".to_string());
     println!("W 3 Flat Len: {}", w_3_flat.len());
     //println!("B 3 Flat Len: {}", b_3.len());
     layer_3.set_all_weights(w_3_flat, b_3, false);
