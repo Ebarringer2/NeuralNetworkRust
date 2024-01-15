@@ -34,18 +34,18 @@ pub mod layer {
         pub fn set_all_weights(&mut self, mut weights: Vec<f64>, bias: f64, set_zeros: bool) {
             if self.num_nodes != weights.len() {
                 if set_zeros {
-                    println!("OVERRIDING: SETTING WEIGHTS TO VEC<0s>");
+                    //println!("OVERRIDING: SETTING WEIGHTS TO VEC<0s>");
                     weights = vec![0.0; self.num_nodes]
                 } else {
-                    println!("WEIGHTS len: {}", weights.len());
-                    println!("BIAS: {}", bias);
-                    println!("LAYER size: {}", self.num_nodes);
+                    //println!("WEIGHTS len: {}", weights.len());
+                    //println!("BIAS: {}", bias);
+                    //println!("LAYER size: {}", self.num_nodes);
                     panic!("Weights and bias lists must match layer size!");
                 }
             }
             for i in 0..self.num_nodes {
                 self.nodes[i].set_weights(weights.clone(), bias);
-                println!("Done setting weights for Node {}", i);
+                //println!("Done setting weights for Node {}", i);
             }
         }
         
@@ -56,9 +56,9 @@ pub mod layer {
                 if num_features != node.weights.len() {
                     panic!("Number of weights does not match number of features");
                 }
-                if self.activation_function == "sigmoid".to_string() {
+                if self.activation_function == "sigmoid" {
                     a_vector.push(node.sigmoid_actualize(input_layer.clone()));
-                } else if self.activation_function == "reLU".to_string() {
+                } else if self.activation_function == "reLU" {
                     a_vector.push(node.reLU_activate(input_layer.clone()));
                 }
             }

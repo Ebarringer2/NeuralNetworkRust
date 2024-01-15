@@ -39,8 +39,8 @@ pub mod node {
             let features_arr: ndarray::prelude::ArrayBase<ndarray::OwnedRepr<f64>, ndarray::prelude::Dim<[usize; 1]>> = Array1::from_vec(features);
             let weights_arr: ndarray::prelude::ArrayBase<ndarray::OwnedRepr<_>, ndarray::prelude::Dim<[usize; 1]>> = Array1::from_vec(self.weights.clone());
             println!("calculating dot product of features and weights");
-            println!("Features: {}", features_arr.view());
-            println!("Weights: {}", weights_arr.view());
+            //println!("Features: {}", features_arr.view());
+            //println!("Weights: {}", weights_arr.view());
             let z: f64 = dot_product(features_arr.view(), weights_arr.view()) + self.bias;
             println!("done");
             let exp_z: f64 = (-z).exp();

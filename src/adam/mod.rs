@@ -91,18 +91,18 @@ pub mod adam {
         pub fn optimize(&mut self, epochs: usize) {
             println!("\nADAM OPTIMIZING");
             let m: f64 = self.gd.x_train.len() as f64;
-            println!("Adam m: {}", m.clone());
+            //println!("Adam m: {}", m.clone());
             let mut gd = self.gd.clone();
             let mut gradients: Vec<f64> = Vec::new();
             for epoch in 0..epochs {
                 for (predictor, output) in self.gd.train_data() {
-                    println!("Adam predictor: {:?}", predictor.clone());
-                    println!("Corresponding output: {}", output.clone());
+                    //println!("Adam predictor: {:?}", predictor.clone());
+                    //println!("Corresponding output: {}", output.clone());
                     let mut error: f64 = self.gd.h(predictor.clone()) - output;
                     if error.is_sign_negative() {
                         error *= -1.0;
                     }
-                    println!("Adam Initial Err: {}", error.clone());
+                    //println!("Adam Initial Err: {}", error.clone());
                     /*let gradients: Vec<f64> = predictor
                         .iter()
                         .enumerate()
@@ -114,15 +114,15 @@ pub mod adam {
                     }
                     //println!("Initial Adam Gradients Vector: {:?}", gradients.clone());
                 }
-                println!("Adam Gradients: {:?}", &gradients);
+                //println!("Adam Gradients: {:?}", &gradients);
                 gd.adam_update(self, &gradients, epoch);
-                println!(
-                    "Epoch: {}, Theta Vector: {:#?}, Bias: {}, Cost: {:?}",
-                    epoch,
-                    gd.theta_matrix,
-                    gd.b,
-                    gd.cost(gd.theta_matrix.clone(), gd.b)
-                );
+                //println!(
+                //    "Epoch: {}, Theta Vector: {:#?}, Bias: {}, Cost: {:?}",
+                //    epoch,
+                //    gd.theta_matrix,
+                //    gd.b,
+                //    gd.cost(gd.theta_matrix.clone(), gd.b)
+                //);
                 self.gd.update_neural_net()
             }
         }

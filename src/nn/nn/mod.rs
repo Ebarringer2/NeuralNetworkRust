@@ -30,8 +30,13 @@ pub mod nn {
             for layer in &self.layers {
                 println!("activating nodes in hidden layer {}", index);
                 index += 1;
-                let output: Vec<f64> = layer.get_nodes().iter().map(|node| node.sigmoid_actualize(input.clone())).collect();
-                outputs.extend(output.clone())
+                if layer.activation_function == "reLU" {
+                    let output: Vec<f64> = layer.get_nodes().iter().map(|node| node.reLU_activate(input.clone())).collect();
+                    outputs.extend(output.clone())
+                } else if layer.activation_function == "sigmoid" {
+                    let output: Vec<f64> = layer.get_nodes().iter().map(|node| node.sigmoid_actualize(input.clone())).collect();
+                    outputs.extend(output.clone());
+                }
             }
             println!("{:?}", outputs);
             return outputs[outputs.len() - 1];

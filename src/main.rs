@@ -164,12 +164,12 @@ fn main() {
     file_save(log_data);
 
     // view original layers
-    println!("\n\n");
-    println!("OPTIMIZED LAYERS");
-    nn.print_layers();
-    println!("\n\n");
+    //println!("\n\n");
+    //println!("OPTIMIZED LAYERS");
+    //nn.print_layers();
+    //println!("\n\n");
 
     // BACKTRACE LOG
-    println!("{:?}", bt);
+    //println!("{:?}", bt);
 
 }
