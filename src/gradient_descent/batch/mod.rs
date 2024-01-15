@@ -16,7 +16,7 @@ pub mod batch {
             }
             let mut sum: f64 = 0.0;
             for (predictor, output) in gd.train_data() {
-                sum += (gd.h(predictor) - output)
+                sum += gd.h(predictor) - output
             }
             gd.b -= (1.0 / m) * gd.learning_rate * sum;
             println!("Epoch {}, Theta: {:#?}, Cost: {:?}, ", i, gd.theta_matrix, gd.cost(gd.theta_matrix.clone(), gd.b))

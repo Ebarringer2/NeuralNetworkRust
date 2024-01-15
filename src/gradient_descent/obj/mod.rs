@@ -51,7 +51,7 @@ pub mod obj {
                 let (weights, bias) = self_clone.get_params_for_layer(i);
                 println!("Weights: {:#?}", weights);
                 println!("Bias: {:?}", bias);
-                layer.set_all_weights(weights, bias, true);
+                layer.set_all_weights(weights.clone(), bias, true);
                 println!("Set layer weights: {:#?}", weights);
                 println!("Set layer bias: {:?}", bias);
             }
@@ -59,7 +59,7 @@ pub mod obj {
 
         pub fn get_params_for_layer(&self, layer_index: usize) -> (Vec<f64>, f64) {
             let weights: Vec<f64> = self.theta_matrix[layer_index].clone();
-            let bias_index: usize = layer_index;
+            //let bias_index: usize = layer_index;
             let bias: f64 = self.theta_matrix[layer_index].last().cloned().unwrap_or(0.0);
             (weights, bias)
         }
@@ -126,26 +126,32 @@ pub mod obj {
             for i in 0..self.num_predictors {
                 if i < gradients.len() {
                     m[i] = adam.beta_1 * m[i] + (1.0 - adam.beta_1) * gradients[i];
-                    println!("EPOCH {} Updating m[i]", i);
                     v[i] = adam.beta_2 * v[i] + (1.0 - adam.beta_2) * gradients[i].powi(2);
-                    println!("EPOCH {} Updated v[i]", i);
                     let m_hat: f64 = m[i] / (1.0 - beta_1_pow);
-                    println!("EPOCH {} Calculated m_hat", i);
                     let v_hat: f64 = v[i] / (1.0 - beta_2_pow);
-                    println!("EPOCH {} Calculated v_hat", i);
-                    self.theta_matrix[i].iter_mut().for_each(|theta| *theta -= self.learning_rate * m_hat / (v_hat.sqrt() + adam.epsilon));
-                    println!("EPOCH {} Updated theta vector", i);
+                    self.theta_matrix[i].iter_mut().for_each(|theta| {
+                        *theta -= self.learning_rate * m_hat / (v_hat.sqrt() + adam.epsilon);
+                    });                      
                 } else {
-                    println!("Made it to break case");
                     break;
                 }
             }
-            let gradient_b: f64 = gradients.iter().map(|&x| x).sum();
-            adam.m_b = adam.beta_1 * adam.m_b + (1.0 - adam.beta_1) * gradient_b;
-            adam.v_b = adam.beta_2 * adam.v_b + (1.0 - adam.beta_2) * gradient_b.powi(2);
-            let m_b_hat: f64 = adam.m_b / (1.0 - beta_1_pow);
-            let v_b_hat: f64 = adam.v_b / (1.0 - beta_2_pow);
-            self.b -= self.learning_rate * m_b_hat / (v_b_hat.sqrt() + adam.epsilon);
+            let gradient_b: f64 = gradients.iter().sum();
+            adam.m_b.iter_mut().enumerate().for_each(|(i, m_b)| {
+                *m_b = adam.beta_1 * *m_b + (1.0 - adam.beta_1) * gradients[i];
+            });
+            adam.v_b.iter_mut().zip(gradients.iter()).for_each(|(v, &grad)| {
+                *v = adam.beta_2 * *v + (1.0 - adam.beta_2) * grad.powi(2);
+            });
+            let m_b_hat: f64 = adam.m_b.iter().sum::<f64>() / (1.0 - beta_1_pow);
+            let v_b_hat: f64 = adam.v_b.iter().sum::<f64>() / (1.0 - beta_2_pow);
+            self.theta_matrix.iter_mut().for_each(|theta_row| {
+                theta_row.iter_mut().for_each(|theta| {
+                    *theta -= self.learning_rate * m_b_hat / (v_b_hat.sqrt() + adam.epsilon);
+                });
+            });            
+            self.b -= self.learning_rate * gradient_b / (v_b_hat.sqrt() + adam.epsilon);
         }
+        
     }
 }
