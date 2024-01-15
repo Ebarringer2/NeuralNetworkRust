@@ -79,7 +79,7 @@ fn main() {
     let mut layer_1: Layer = Layer::new(
         4,
         w_1_flat.len(),
-        "reLU".to_string()
+        "sigmoid".to_string()
     );
     println!("W Flat Len: {}", w_1_flat.len());
     //println!("B Flat Len: {}", b_1.len());
@@ -87,7 +87,7 @@ fn main() {
     let mut layer_2: Layer = Layer::new(
         4, 
         w_2_flat.len(),
-        "reLU".to_string()
+        "sigmoid".to_string()
     );
     println!("W 2 Flat Len: {}", w_2_flat.len());
     //println!("B 2 Flat Len: {}", b_2.len());
@@ -95,7 +95,7 @@ fn main() {
     let mut layer_3: Layer = Layer::new(
         4,
          w_3_flat.len(),
-        "reLU".to_string());
+        "sigmoid".to_string());
     println!("W 3 Flat Len: {}", w_3_flat.len());
     //println!("B 3 Flat Len: {}", b_3.len());
     layer_3.set_all_weights(w_3_flat, b_3, false);
@@ -108,7 +108,7 @@ fn main() {
         layer.print_layer()
     }
 
-    let nn: NeuralNetwork = NeuralNetwork::new(layers);
+    let mut nn: NeuralNetwork = NeuralNetwork::new(layers);
     let input_layer: Vec<f64> = vec![0.0, 0.0, 0.0, 0.0];
     let prediction: f64 = nn.predict(input_layer.clone());
     println!("\n");
@@ -148,12 +148,19 @@ fn main() {
     let epochs: usize = 100;
     adam.optimize(epochs);
     println!("\n\n\n");
-    println!("Final Weights: \n");
+    //println!("Final Weights: \n");
     for i in 0..nn.num_layers {
-        println!("Layer {}: {:#?}", i, gd.get_params_for_layer(i))
+        let mut updated_params: (Vec<f64>, f64) = gd.get_params_for_layer(i);
+        println!("Layer {}: {:#?}", i, updated_params.clone());
+        updated_params.0.pop();
+        nn.layers[i].set_all_weights(updated_params.0, updated_params.1, false);
     }
-    println!("Final Bias: {:?}", gd.get_y());
-    println!("\n\n\n");
+    nn.print_layers();
+
+    //println!("Final Bias: {:?}", gd.get_y());
+    //println!("\n\n\n");
+
+    println!("\n\nSecond prediction: {}", nn.predict(input_layer));
 
     // log
     let mut log_data: String = String::new();

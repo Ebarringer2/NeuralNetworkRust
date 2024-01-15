@@ -1,6 +1,8 @@
 pub mod nn {
     //use core::num;
     use crate::nn::layer::layer::Layer;
+    use std::thread;
+    use std::time::Duration;
 
     #[derive(Clone)]
     pub struct NeuralNetwork {
@@ -24,6 +26,8 @@ pub mod nn {
             self.num_layers += 1;
         }
         pub fn predict(&self, input_layer: Vec<f64>) -> f64 {
+            println!("\n\nCALCULATING PREDICTION");
+            thread::sleep(Duration::from_secs(2));
             let mut outputs: Vec<f64> = Vec::new();
             let input: Vec<f64> = input_layer;
             let mut index: i64 = 1;
