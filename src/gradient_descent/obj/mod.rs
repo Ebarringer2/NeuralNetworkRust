@@ -81,10 +81,14 @@ pub mod obj {
         }
         
         
-        pub fn h_given_params(&self, X: Vec<f64>, theta_matrix: Vec<f64>, b: f64) -> f64 {
-            theta_matrix.iter().zip(X.iter()).fold(0.0, |acc, (&theta, &x)| acc + theta * x) + b
+        pub fn h_given_params(&self, X: Vec<f64>, theta_matrix: Vec<Vec<f64>>, b: f64) -> f64 {
+            theta_matrix
+                .iter()
+                .flat_map(|layer| layer.iter().zip(X.iter()))
+                .fold(0.0, |acc, (&theta, &x)| acc + theta * x)
+                + b
         }
-
+        
         pub fn get_y(&self) -> f64 {
             self.b.clone()
         }
@@ -102,14 +106,17 @@ pub mod obj {
                 .collect()
         }
 
-        pub fn cost(&self, theta_matrix: Vec<f64>, b: f64) -> f64 {
+        /// Returns the costs for each layer in the Neural Network as a vector of floats
+        pub fn cost(&self, theta_matrix: Vec<Vec<f64>>, b: f64) -> Vec<f64> {
             let m: f64 = self.x_train.len() as f64;
-            let mut cost: f64 = 0.0;
+            let mut costs: Vec<f64> = Vec::new();
             for (predictors, output) in self.train_data() {
-                cost += (self.h_given_params(predictors.to_vec(), theta_matrix.clone(), b) - output).powf(2.0);
+                let prediction = self.h_given_params(predictors.to_vec(), theta_matrix.clone(), b);
+                let individual_cost = (prediction - output).powf(2.0) / (2.0 * m);
+                costs.push(individual_cost);
             }
-            cost * 1.0 / (2.0 * m)
-        }   
+            costs
+        }
 
         pub fn adam_update(&mut self, adam: &mut Adam, gradients: Vec<f64>, epoch: usize) {
             let mut m: Vec<f64> = vec![0.0; self.num_predictors];

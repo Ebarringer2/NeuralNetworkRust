@@ -17,8 +17,8 @@ pub mod adam {
         pub beta_1: f64,
         pub beta_2: f64,
         pub epsilon: f64,
-        pub m_b: f64,
-        pub v_b: f64
+        pub m_b: Vec<f64>,
+        pub v_b: Vec<f64>
     }
 
     impl Adam {
@@ -82,8 +82,8 @@ pub mod adam {
                 beta_1,
                 beta_2,
                 epsilon,
-                m_b: 0.0,
-                v_b: 0.0,
+                m_b: vec![0.0; gd.num_predictors],
+                v_b: vec![0.0; gd.num_predictors]
             }
         }
 
@@ -101,11 +101,11 @@ pub mod adam {
                     gd.adam_update(self, gradients, epoch)
                 }
                 println!(
-                    "Epoch: {}, Theta Vector: {:#?}, Bias: {}, Cost: {}",
+                    "Epoch: {}, Theta Vector: {:#?}, Bias: {}, Cost: {:?}",
                     epoch,
-                    gd.theta_vector,
+                    gd.theta_matrix,
                     gd.b,
-                    gd.cost(gd.theta_vector.clone(), gd.b)
+                    gd.cost(gd.theta_matrix.clone(), gd.b)
                 );
                 self.gd.update_neural_net()
             }

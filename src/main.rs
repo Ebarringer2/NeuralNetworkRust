@@ -72,36 +72,21 @@ fn main() {
 
     let w_3_flat: Vec<f64> = w_3.into_iter().flatten().collect();
 
-    let b_1: Vec<f64> = vec![
-        0.07
-    ];
-
-    let b_2: Vec<f64> = vec![
-        0.2
-    ];
-
-    let b_3: Vec<f64> = vec![
-        0.03
-    ];
-
-    /*
-    In this instantiation of the layers for the neural network,
-    the number of features is being hard coded to 2.
-    This is something that needs to be changed in the future, but 
-    for now, it will work fine.
-     */
+    let b_1: f64 = 0.07;
+    let b_2: f64 = 0.02;
+    let b_3: f64 = 0.03;
 
     let mut layer_1: Layer = Layer::new(4, w_1_flat.len());
     println!("W Flat Len: {}", w_1_flat.len());
-    println!("B Flat Len: {}", b_1.len());
+    //println!("B Flat Len: {}", b_1.len());
     layer_1.set_all_weights(w_1_flat, b_1, false);
     let mut layer_2: Layer = Layer::new(4, w_2_flat.len());
     println!("W 2 Flat Len: {}", w_2_flat.len());
-    println!("B 2 Flat Len: {}", b_2.len());
+    //println!("B 2 Flat Len: {}", b_2.len());
     layer_2.set_all_weights(w_2_flat, b_2, false);
     let mut layer_3: Layer = Layer::new(4, w_3_flat.len());
     println!("W 3 Flat Len: {}", w_3_flat.len());
-    println!("B 3 Flat Len: {}", b_3.len());
+    //println!("B 3 Flat Len: {}", b_3.len());
     layer_3.set_all_weights(w_3_flat, b_3, false);
 
     let layers: Vec<Layer> = vec![layer_1, layer_2, layer_3];

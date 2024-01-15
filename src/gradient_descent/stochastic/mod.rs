@@ -9,12 +9,11 @@ pub mod stochastic {
             for (predictor, output) in gd.train_data() {
                 let error = gd.h(predictor.clone()) - output;
                 for j in 0..gd.num_predictors {
-                    gd.theta_vector[j] -= (gd.learning_rate / m) * error * predictor[j]
+                    gd.theta_matrix[j].iter_mut().for_each(|theta| *theta -= (gd.learning_rate / m) * error * predictor[j]);
                 }
-                gd.b -= (gd.learning_rate / m) * error
+                gd.b -= (gd.learning_rate / m) * error;
             }
-            println!("Epoch: {}, Theta Vector: {:#?}, Cost: {}", i, gd.theta_vector, gd.cost(gd.theta_vector.clone(), gd.b))
+            println!("Epoch: {}, Theta Vector: {:#?}, Cost: {:?}", i, gd.theta_matrix, gd.cost(gd.theta_matrix.clone(), gd.b))
         }
     }
-
 }
