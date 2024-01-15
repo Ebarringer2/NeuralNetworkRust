@@ -99,7 +99,7 @@ fn main() {
 
     let nn: NeuralNetwork = NeuralNetwork::new(layers);
     let input_layer: Vec<f64> = vec![0.0, 0.0, 0.0, 0.0];
-    let prediction: f64 = nn.predict(input_layer);
+    let prediction: f64 = nn.predict(input_layer.clone());
     println!("\n");
     println!("PREDICTION: {}", prediction);
     println!("\n");
@@ -108,6 +108,10 @@ fn main() {
     let y_train: Vec<f64> = x_train.iter().map(|&x| 2.0 * x + 1.0 + rand::thread_rng().gen_range(-1.0..1.0)).collect();
     println!("X Train Size: {}", x_train.len());
     println!("Y Train Size: {}", y_train.len());
+    println!("\n");
+    println!("Input Layer: {:?}", input_layer);
+    println!("X train: {:?}", x_train);
+    println!("Y train: {:?}", y_train);
 
     let learning_rate: f64 = 0.01;
     let num_predictors: usize = x_train.len();

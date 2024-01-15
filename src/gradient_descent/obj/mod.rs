@@ -59,7 +59,7 @@ pub mod obj {
 
         pub fn get_params_for_layer(&self, layer_index: usize) -> (Vec<f64>, f64) {
             let weights: Vec<f64> = self.theta_matrix[layer_index].clone();
-            //let bias_index: usize = layer_index;
+            let bias_index: usize = layer_index;
             let bias: f64 = self.theta_matrix[layer_index].last().cloned().unwrap_or(0.0);
             (weights, bias)
         }
@@ -98,12 +98,14 @@ pub mod obj {
         }
 
         pub fn train_data(&self) -> Vec<(Vec<f64>, f64)> {
-            self.x_train
+            let output: Vec<(Vec<f64>, f64)> = self.x_train
                 .iter()
                 .cloned()
                 .zip(self.y_train.iter().cloned())
                 .map(|(predictors, output)| (vec![predictors], output))
-                .collect()
+                .collect();
+            println!("Output of training data generation: {:?}", output.clone());
+            output
         }
 
         /// Returns the costs for each layer in the Neural Network as a vector of floats
@@ -118,25 +120,33 @@ pub mod obj {
             costs
         }
 
-        pub fn adam_update(&mut self, adam: &mut Adam, gradients: Vec<f64>, epoch: usize) {
+        pub fn adam_update(&mut self, adam: &mut Adam, gradients: &Vec<f64>, epoch: usize) {
+            println!("ADAM UPDATING");
+            println!("USING GRADIENTS: {:?}", gradients.clone());
             let mut m: Vec<f64> = vec![0.0; self.num_predictors];
             let mut v: Vec<f64> = vec![0.0; self.num_predictors];
             let beta_1_pow: f64 = adam.beta_1.powi(epoch as i32);
             let beta_2_pow: f64 = adam.beta_2.powi(epoch as i32);
             for i in 0..self.num_predictors {
-                if i < gradients.len() {
+                if i < gradients.len() || i == gradients.len() {
+                    println!("Index: {}", i.clone());
+                    println!("Gradients Len: {}", gradients.len());
+                    println!("Theta Matrix Len: {}", self.clone().theta_matrix.len());
                     m[i] = adam.beta_1 * m[i] + (1.0 - adam.beta_1) * gradients[i];
                     v[i] = adam.beta_2 * v[i] + (1.0 - adam.beta_2) * gradients[i].powi(2);
                     let m_hat: f64 = m[i] / (1.0 - beta_1_pow);
                     let v_hat: f64 = v[i] / (1.0 - beta_2_pow);
-                    self.theta_matrix[i].iter_mut().for_each(|theta| {
-                        *theta -= self.learning_rate * m_hat / (v_hat.sqrt() + adam.epsilon);
-                    });                      
+                    if i < self.clone().theta_matrix.len() {
+                        self.theta_matrix[i].iter_mut().for_each(|theta| {
+                            *theta -= self.learning_rate * m_hat / (v_hat.sqrt() + adam.epsilon);
+                        });
+                    }                    
                 } else {
                     break;
                 }
             }
             let gradient_b: f64 = gradients.iter().sum();
+            println!("GRADIENTS Len: {}", gradients.len());
             adam.m_b.iter_mut().enumerate().for_each(|(i, m_b)| {
                 *m_b = adam.beta_1 * *m_b + (1.0 - adam.beta_1) * gradients[i];
             });
