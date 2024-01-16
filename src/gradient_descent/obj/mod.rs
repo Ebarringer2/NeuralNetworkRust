@@ -59,7 +59,7 @@ pub mod obj {
 
         pub fn get_params_for_layer(&self, layer_index: usize) -> (Vec<f64>, f64) {
             let weights: Vec<f64> = self.theta_matrix[layer_index].clone();
-            let bias_index: usize = layer_index;
+            let _bias_index: usize = layer_index;
             let bias: f64 = self.theta_matrix[layer_index].last().cloned().unwrap_or(0.0);
             (weights, bias)
         }

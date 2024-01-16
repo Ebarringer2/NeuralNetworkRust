@@ -48,7 +48,7 @@ fn file_save(data: String) -> Result<(), Error> {
 fn main() {
 
     // BACKTRACE
-    let bt = Backtrace::new();
+    let _bt = Backtrace::new();
 
     // weights and biases
     let w_1: Vec<Vec<f64>> = vec![

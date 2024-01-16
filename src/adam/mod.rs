@@ -109,7 +109,7 @@ pub mod adam {
                         .map(|(j, &x)| (self.gd.learning_rate / m) * error * x)
                         .collect();
                     */
-                    for (j, &x) in predictor.iter().enumerate() {
+                    for (_j, &x) in predictor.iter().enumerate() {
                         gradients.push((self.gd.learning_rate / m) * error * x);
                     }
                     //println!("Initial Adam Gradients Vector: {:?}", gradients.clone());
