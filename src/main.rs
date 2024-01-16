@@ -166,7 +166,7 @@ fn main() {
     let mut log_data: String = String::new();
     log_data.push_str("Final Weights: ");
     log_data.push_str(&format!("{:?}", gd.get_params()));
-    log_data.push_str("\nFinal Bias: ");
+    log_data.push_str("\nFinal Bias: ")
     log_data.push_str(&format!("{:?}", gd.get_y()));
     file_save(log_data);
 
