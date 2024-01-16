@@ -1,11 +1,9 @@
-# NeuralNetworkRust
+# RustML
 
-The goal with this project, similarly to the repository linked below, is to write and implement a fully scalabale
-Neural Network framework from scratch, using only external crates for mathematics, like CUDA Matmul and dot products. This code is all based on another repository that I was working on. There were some issues with the git control flow,
-so I moved the Rust implementation over here. 
+RustML is a machine learning framework developed entirely from scratch with an emphasis on performance and memory safety. All of the source code in this repository is developed without any external crates for machine learning, meaning that apart from Cuda linear algebra, the nodes, layers, and neural networks are all implemented from scratch.
 
 ### Breakdown
-Since this project is intended to build a neural network from scratch, every aspect present in the model is constructed from scratch. Beginning with nodes and working upwards, there is implementation for every layer of the model, Batch, Batch Vectorized, Stochastic, and Stochastic Vectorized Gradient Descent, The Neural Network object itself, and Adam optimization as of right now. The goal with this project is to contiously expand, eventually reaching specific architectures like GANs, LLMs, and CNNs.
+RustML is a continous project. Our goal is to keep developing the framework from the ground up, eventually reaching the latest developments in machine learning research. As of the latest commits, RustML contains support for individual nodes, layers, and neural networks for a standard Neural Network based project. Expansion is headed in the direction of Convolutional Neural Networks currently, but we hope to reach GANS, Large Language Models, Transformers, and BERTS eventually. 
 
 
 ### Author Note
