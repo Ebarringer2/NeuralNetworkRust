@@ -10,6 +10,10 @@ mod gradient_descent {
     pub mod batch;
 }
 
+mod cnn {
+    pub mod image_tensor;
+}
+
 mod adam;
 
 use nn::layer::layer::Layer;
@@ -19,6 +23,7 @@ use gradient_descent::obj::obj::GradientDescent;
 //use gradient_descent::stochastic::stochastic::stochastic_vect;
 //use gradient_descent::batch::batch::{batch, batch_vectorized};
 use adam::adam::Adam;
+use cnn::image_tensor::image_tensor::ImageProcessor;
 use std::fs::OpenOptions;
 use std::io::{Write, Error, ErrorKind};
 use rand::Rng;
@@ -46,6 +51,10 @@ fn file_save(data: String) -> Result<(), Error> {
 
 
 fn main() {
+
+    // image convolution test
+    let image_tensor = ImageProcessor::read_to_tensor("./image.jpg");
+    println!("IMAGE TENSOR: {:?}", image_tensor);
 
     // BACKTRACE
     let _bt = Backtrace::new();
@@ -109,7 +118,7 @@ fn main() {
     }
 
     let mut nn: NeuralNetwork = NeuralNetwork::new(layers);
-    let input_layer: Vec<f64> = vec![0.0, 0.0, 0.0, 0.0];
+    let input_layer: Vec<f64> = vec![0.0, 0.0, 0.0, 1.0];
     let prediction: f64 = nn.predict(input_layer.clone());
     println!("\n");
     println!("PREDICTION: {}", prediction);
@@ -159,14 +168,16 @@ fn main() {
 
     //println!("Final Bias: {:?}", gd.get_y());
     //println!("\n\n\n");
-
+    
+    //let correct_value = x_train[input_layer[0] as usize].clone();
     println!("\n\nSecond prediction: {}", nn.predict(input_layer));
+   // println!("Correct Value: {}", correct_value);
 
     // log
     let mut log_data: String = String::new();
     log_data.push_str("Final Weights: ");
     log_data.push_str(&format!("{:?}", gd.get_params()));
-    log_data.push_str("\nFinal Bias: ")
+    log_data.push_str("\nFinal Bias: ");
     log_data.push_str(&format!("{:?}", gd.get_y()));
     file_save(log_data);
 
