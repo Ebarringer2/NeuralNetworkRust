@@ -119,7 +119,13 @@ pub mod obj {
             }
             costs
         }
-
+        
+        /// MSE loss
+        pub fn mse_loss(y_pred: f64, y_true: f64) -> f64 {
+            let error = y_pred - y_true;
+            error * error
+        }
+        
         pub fn adam_update(&mut self, adam: &mut Adam, gradients: &Vec<f64>, epoch: usize) {
             //println!("ADAM UPDATING");
             //println!("USING GRADIENTS: {:?}", gradients.clone());

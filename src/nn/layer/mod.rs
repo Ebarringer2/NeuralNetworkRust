@@ -72,5 +72,10 @@ pub mod layer {
         pub fn get_nodes(&self) -> Vec<Node> {
             self.nodes.clone()
         }
+
+        pub fn back_propagate(&self) {
+            
+            
+        }
     }
 }
