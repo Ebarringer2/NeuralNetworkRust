@@ -1,6 +1,6 @@
 pub mod node {
 
-    use ndarray::{Array1, ArrayView1};
+    use ndarray::{Array1, ArrayView1, Array2};
     use std::fmt;
 
     /// calculates the dot product of two ndarray type objects
@@ -61,9 +61,15 @@ pub mod node {
             self.weights = weights;
             self.bias = bias;
         }
-        pub fn get_weights(&self) -> (Vec<f64>, f64) {
-            (self.weights.clone(), self.bias)
+        pub fn get_weights(&self) -> Array2<f64> {
+            Array2::from_vec(self.weights.clone())
         }
+        pub fn get_bias(&self) -> f64 {
+            self.bias.clone()
+        }
+        //pub fn get_weights(&self) -> (Vec<f64>, f64) {
+        //    (self.weights.clone(), self.bias)
+        //}
         pub fn str(&self) {
             println!("{}", &self)
         }

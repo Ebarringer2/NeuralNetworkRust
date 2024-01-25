@@ -9,18 +9,26 @@ pub mod nn {
     #[derive(Clone)]
     pub struct NeuralNetwork {
         pub layers: Vec<Layer>,
-        pub num_layers: usize
+        pub num_layers: usize,
+        pub alpha: f64,
+        pub weights: Vec<Vec<Array2<f64>>>,
+        pub biases: Vec<Vec<Array2<f64>>>
     }
 
     impl NeuralNetwork {
 
-        /// Creates a new Neural Network object with an input Vec<Layer>
-        pub fn new(layers: Vec<Layer>) -> NeuralNetwork {
+        /// Creates a new Neural Network object with an input Vec<Layer> and a learning rate
+        pub fn new(layers: Vec<Layer>, alpha: f64) -> NeuralNetwork {
             let num_layers: usize = layers.len();
+            let weights = layers.iter().map(|layer| layer.get_weights().clone()).collect();
+            let biases = layers.iter().map(|layer| layer.get_biases().clone()).collect();
             println!("CREATED NEURAL NETWORK OBJECT WITH NUM_LAYERS: {}", num_layers);
             NeuralNetwork {
                 layers,
-                num_layers
+                num_layers,
+                alpha,
+                weights,
+                biases
             }
         }
         pub fn add_layer(&mut self, layer: Layer, location: usize) {
@@ -57,7 +65,10 @@ pub mod nn {
         pub fn mut_clone(&mut self) -> NeuralNetwork {
             NeuralNetwork {
                 layers: self.layers.iter().map(|layer| layer.clone()).collect(),
-                num_layers: self.num_layers
+                num_layers: self.num_layers,
+                alpha: self.alpha,
+                weights: self.weights.clone(),
+                biases: self.biases.clone()
             }
         }
 
@@ -69,7 +80,7 @@ pub mod nn {
             // Forward Prop
             for (i, layer) in self.layers.iter().enumerate() {
                 if i == 0 {
-                    assert_eq!(a[i].shape(), (self.layers[i].get_weights().shape()[0], m));
+                    assert_eq!(a[i].shape(), (self.layers[i].num_weights, m));
                 } else {
                     println!("Inputs shape: {:?}", a[i].shape());
                     println!(

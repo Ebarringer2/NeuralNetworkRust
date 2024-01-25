@@ -1,4 +1,6 @@
 pub mod layer {
+    extern crate ndarray;
+    use ndarray::Array2;
     use crate::nn::node::node::Node;
     use rand::Rng;
 
@@ -6,7 +8,8 @@ pub mod layer {
     pub struct Layer {
         pub nodes: Vec<Node>,
         pub num_nodes: usize,
-        pub activation_function: String
+        pub activation_function: String,
+        pub num_weights: usize
     }
 
     impl Layer {
@@ -19,10 +22,12 @@ pub mod layer {
                 let weights: Vec<f64> = (0..num_features).map(|_| rng.gen::<f64>()).collect();
                 Node::new(weights, bias)
             }).collect();
+            let num_weights: usize = 0;
             Layer {
                 nodes,
                 num_nodes,
-                activation_function
+                activation_function,
+                num_weights
             }
         }
         pub fn set_weights(&mut self, index: usize, weights: Vec<f64>, bias: f64) {
@@ -43,6 +48,7 @@ pub mod layer {
                     panic!("Weights and bias lists must match layer size!");
                 }
             }
+            self.num_weights = weights.len();
             for i in 0..self.num_nodes {
                 self.nodes[i].set_weights(weights.clone(), bias);
                 //println!("Done setting weights for Node {}", i);
@@ -73,5 +79,12 @@ pub mod layer {
             self.nodes.clone()
         }
 
+        pub fn get_weights(&self) -> Vec<Array2<f64>> {
+            self.nodes.iter().map(|node| node.get_weights().clone()).collect::<Vec<_>>()
+        }
+
+        pub fn get_biases(&self) -> Vec<Array2<f64>> {
+            return self.nodes.iter().map(|node| node.get_bias().clone()).collect();
+        }
     }
 }
