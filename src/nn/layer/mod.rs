@@ -73,9 +73,5 @@ pub mod layer {
             self.nodes.clone()
         }
 
-        pub fn back_propagate(&self) {
-            
-            
-        }
     }
 }
