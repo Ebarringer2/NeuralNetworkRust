@@ -1,3 +1,6 @@
+// READ NOTE IN OBJ MODULE
+
+/* 
 pub mod stochastic {
     
     use crate::gradient_descent::obj::obj::GradientDescent;
@@ -17,3 +20,4 @@ pub mod stochastic {
         }
     }
 }
+*/

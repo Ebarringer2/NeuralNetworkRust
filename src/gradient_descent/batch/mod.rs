@@ -1,3 +1,6 @@
+// READ NOTE IN OBJ MODULE
+
+/*
 pub mod batch {
 
     use crate::gradient_descent::obj::obj::GradientDescent;
@@ -39,3 +42,4 @@ pub mod batch {
         }
     }
 }
+*/

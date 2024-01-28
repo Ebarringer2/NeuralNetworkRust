@@ -1,5 +1,10 @@
 // contains the GD struct
 
+// This code needs to be updated, and will likely just be retired because the neural network already 
+// has back propagation and gradient descent as its own methods. I will comment this code out in order
+// to avoid compiler errors, but it can be uncommented for whatever reason necessary
+
+/* 
 pub mod obj {
     use crate::adam::adam::Adam;
     use crate::nn::nn::nn::NeuralNetwork;
@@ -51,7 +56,7 @@ pub mod obj {
                 let (weights, bias) = self_clone.get_params_for_layer(i);
                 //println!("Weights: {:#?}", weights);
                 //println!("Bias: {:?}", bias);
-                layer.set_all_weights(weights.clone(), bias, true);
+                layer.set_all_weights(weights.clone(), bias);
                 //println!("Set layer weights: {:#?}", weights);
                 //println!("Set layer bias: {:?}", bias);
             }
@@ -171,3 +176,4 @@ pub mod obj {
         
     }
 }
+*/
