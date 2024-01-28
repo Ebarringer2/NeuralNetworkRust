@@ -1,7 +1,7 @@
 pub mod nn {
 
-    use crate::Layer;
-    use ndarray::{Array1, Array2};
+    use crate::nn::layer::layer::Layer;
+    use ndarray::{Array1, Array2, ArrayBase};
     use ndarray::Axis;
 
     pub struct NeuralNetwork {
@@ -90,13 +90,15 @@ pub mod nn {
                 let dz_curr = if l == self.num_layers {
                     activations[l].clone() - y
                 } else {
-                    let da: ndarray::prelude::ArrayBase<ndarray::OwnedRepr<f64>, ndarray::prelude::Dim<[usize; 1]>> = self.layers[l - 1].get_weights().t().dot(&dz[self.num_layers - l].reversed_axes());
+                    let dz_clone = dz.clone();
+                    let da: ndarray::prelude::ArrayBase<ndarray::OwnedRepr<f64>, ndarray::prelude::Dim<[usize; 1]>> = self.layers[l - 1].get_weights().t().dot(&dz_clone[self.num_layers - l].reversed_axes());
                     let g_prime: ndarray::prelude::ArrayBase<ndarray::OwnedRepr<f64>, ndarray::prelude::Dim<[usize; 2]>> = activations[l].mapv(|x| x * (1.0 - x));
                     da * g_prime
                 };
+                let dz_curr_clone = dz_curr.clone();
                 dz.push(dz_curr);
-                dw.push((dz_curr.dot(&activations[l - 1].t())) / m as f64);
-                db.push(dz_curr.sum_axis(Axis(1)) / m as f64);
+                dw.push((dz_curr_clone.dot(&activations[l - 1].t())) / m as f64);
+                db.push(dz_curr_clone.sum_axis(Axis(1)) / m as f64);
                 println!("Backward Pass layer {}", self.num_layers - l + 1);
             }
             dz.reverse();
@@ -107,6 +109,8 @@ pub mod nn {
     
         pub fn gradient_descent(&mut self, cost_fun: &str, x: Array1<f64>, y: Array1<f64>, epochs: usize) {
             let mut costs: Vec<f64> = Vec::new();
+            let y_clone: ArrayBase<ndarray::OwnedRepr<f64>, ndarray::prelude::Dim<[usize; 1]>> = y.clone();
+            let y_clone_2: ArrayBase<ndarray::OwnedRepr<f64>, ndarray::prelude::Dim<[usize; 1]>> = y_clone.clone();
             match cost_fun {
                 "MSE" => {
                     // need to implement logic here
@@ -116,19 +120,27 @@ pub mod nn {
                         // Forward Prop
                         let a: Vec<ndarray::prelude::ArrayBase<ndarray::OwnedRepr<f64>, ndarray::prelude::Dim<[usize; 1]>>> = self.forward_prop(&x).1;
                         // Calculate cost
-                        let cost = self.sigmoid_cost(&a[a.len() - 1], &y);
+                        //let y_clone = y.clone();
+                        let cost = self.sigmoid_cost(&a[a.len() - 1], &y_clone);
                         println!("Cost on epoch {}: {}", e, cost);
                         costs.push(cost);
     
                         // Backward Prop
-                        let (d_w, d_b) = self.back_prop(&a.into_iter().map(|arr| arr.insert_axis(Axis(1))).collect(), &y.insert_axis(Axis(0)));
+                        let (d_w, d_b) = self.back_prop(&a.into_iter().map(|arr| arr.insert_axis(Axis(1))).collect(), &y_clone_2.insert_axis(Axis(0)));
                         // Update weights and biases
                         for (i, layer) in self.layers.iter_mut().enumerate() {
                             let w_new = layer.get_weights() - self.alpha * &d_w[i];
                             println!("New Weights on epoch {} in layer {}: {:?}", e, i + 1, w_new);
                             let b_new = layer.get_biases() - self.alpha * &d_b[i];
                             println!("New Biases on epoch {} in layer {}: {:?}", e, i + 1, b_new);
-                            layer.set_all_weights(w_new.into_iter().map(|arr| vec![arr]).collect(), b_new.into_raw_vec());
+                            layer.set_all_weights(
+                                w_new
+                                    .into_iter()
+                                    .map(|arr| ArrayBase::<ndarray::OwnedRepr<f64>, ndarray::Dim<[usize; 1]>>::from_vec(vec![arr]).into_owned())
+                                    .collect(),
+                                b_new.into_raw_vec(),
+                            );
+                            
                         }
                         println!("Costs: {:?}", costs);
                     }
