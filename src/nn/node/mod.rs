@@ -1,77 +1,104 @@
 pub mod node {
 
-    use ndarray::{Array1, ArrayView1, Array2};
-    use std::fmt;
+    use ndarray::Array1;
 
-    /// calculates the dot product of two ndarray type objects
-    pub fn dot_product(arr1: ArrayView1<f64>, arr2: ArrayView1<f64>) -> f64 {
-        arr1.dot(&arr2)
-    }
-
-    /// Shortcut for the dot product value used in node activation equations
-    pub fn create_z(features: ndarray::prelude::ArrayBase<ndarray::OwnedRepr<f64>, ndarray::prelude::Dim<[usize; 1]>>, weights: ndarray::prelude::ArrayBase<ndarray::OwnedRepr<f64>, ndarray::prelude::Dim<[usize; 1]>>, bias: f64) -> f64 {
-        dot_product(features.view(), weights.view()) + bias
-    }
-
-    #[derive(Clone)]
-    pub struct Node {
-        pub weights: Vec<f64>,
-        pub bias: f64
-    }
-
-    impl fmt::Display for Node {
-        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-            write!(f, "Weights: {:?}, bias: {}", self.weights, self.bias)
-        }
+    struct Node {
+        weights: Vec<f64>,
+        num_weights: usize,
+        b: f64,
     }
 
     impl Node {
-        /// Creates a new Node Object with weights and a bias
-        pub fn new(weights: Vec<f64>, bias: f64) -> Self {
-            Node {
-                weights,
-                bias
+        fn new(weights: Vec<f64>, b: f64) -> Self {
+            let num_weights = weights.len();
+            Node { weights, num_weights, b }
+        }
+
+        // Range 0 - 1
+        fn sigmoid_actualize(&self, features: &Array1<f64>) -> f64 {
+            let z = features.dot(&Array1::from(self.weights.clone())) + self.b;
+            1.0 / (1.0 + (-z).exp())
+        }
+
+        // Range 0 - infinity
+        fn relu_actualize(&self, features: &Array1<f64>) -> f64 {
+            let z = features.dot(&Array1::from(self.weights.clone())) + self.b;
+            z.max(0.0)
+        }
+
+        // Range -1 - 1
+        fn tanh_activation(&self, features: &Array1<f64>) -> f64 {
+            let z = features.dot(&Array1::from(self.weights.clone())) + self.b;
+            let a = z.exp();
+            let b = (-z).exp();
+            (a - b) / (a + b)
+        }
+
+        // Enables back propagation for ReLu
+        // Enables negative signed inputs, which means
+        // that the gradient on the left side of the activation graph
+        // is non-zero, enabling back propagation
+        fn leaky_relu_activation(&self, features: &Array1<f64>) -> f64 {
+            let z = features.dot(&Array1::from(self.weights.clone())) + self.b;
+            z.max(0.1 * z)
+        }
+
+        // Parametric Relu can be used when leaky Relu doesn't solve the
+        // zero gradient problem for Relu activation
+        // Creates problems because the solution is to use a slope value
+        // for negative inputs, but there can be difficulty finding the
+        // correct slope value
+        fn parametric_relu_activation(&self, features: &Array1<f64>, a: f64) -> f64 {
+            let z = features.dot(&Array1::from(self.weights.clone())) + self.b;
+            z.max(a * z)
+        }
+
+        // Uses log curve to define negative inputs
+        // a helps define the log curve
+        fn elu_activation(&self, features: &Array1<f64>, a: f64) -> f64 {
+            let z = features.dot(&Array1::from(self.weights.clone())) + self.b;
+            if z >= 0.0 {
+                z
+            } else {
+                a * ((-z).exp() - 1.0)
             }
         }
-        /// Sigmoid Actualization
-        pub fn sigmoid_actualize(&self, features: Vec<f64>) -> f64 {
-            println!("Sigmoid activating");
-            let features_arr: ndarray::prelude::ArrayBase<ndarray::OwnedRepr<f64>, ndarray::prelude::Dim<[usize; 1]>> = Array1::from_vec(features);
-            let weights_arr: ndarray::prelude::ArrayBase<ndarray::OwnedRepr<_>, ndarray::prelude::Dim<[usize; 1]>> = Array1::from_vec(self.weights.clone());
-            println!("calculating dot product of features and weights");
-            //println!("Features: {}", features_arr.view());
-            //println!("Weights: {}", weights_arr.view());
-            let z: f64 = dot_product(features_arr.view(), weights_arr.view()) + self.bias;
-            println!("done");
-            let exp_z: f64 = (-z).exp();
-            let output: f64 = 1.0 / (1.0 + exp_z);
-            println!("Activation output: {}", output);
-            output
+
+        // Useful for multi-class classification problems
+        fn softmax_activation(&self, features: &Array1<f64>) -> f64 {
+            let z = features.dot(&Array1::from(self.weights.clone())) + self.b;
+            let max_x = features.max().unwrap();
+            let e_x = (z - max_x).exp();
+            e_x / e_x.sum()
         }
 
-        pub fn reLU_activate(&self, features: Vec<f64>) -> f64 {
-            println!("ReLU activating");
-            let z: f64 = create_z(Array1::from_vec(features), Array1::from_vec(self.weights.clone()), self.bias);
-            let output: f64 = f64::max(0.0, z);
-            println!("Activation output: {}", output);
-            output
+        // Consistently outperforms or performs at the same level as Relu activation
+        // Is literally just z * sigmoid_actualize(z)
+        fn swish(&self, features: &Array1<f64>) -> f64 {
+            let z = features.dot(&Array1::from(self.weights.clone())) + self.b;
+            let sigmoid = 1.0 / (1.0 + (-z).exp());
+            z * sigmoid
         }
 
-        pub fn set_weights(&mut self, weights: Vec<f64>, bias: f64) {
+        // GELU implementation
+        fn gelu_activation(&self, features: &Array1<f64>) -> f64 {
+            let z = features.dot(&Array1::from(self.weights.clone())) + self.b;
+            let coefficient = (2.0 / std::f64::consts::PI).sqrt();
+            0.5 * z * (1.0 + (coefficient * (z + 0.044715 * z.powi(3))).tanh())
+        }
+
+        fn set_weights(&mut self, weights: Vec<f64>, b: f64) {
             self.weights = weights;
-            self.bias = bias;
+            self.b = b;
+            self.num_weights = weights.len();
         }
-        pub fn get_weights(&self) -> Array2<f64> {
-            Array2::from_vec(self.weights.clone())
+
+        fn get_weights(&self) -> &Vec<f64> {
+            &self.weights
         }
-        pub fn get_bias(&self) -> f64 {
-            self.bias.clone()
-        }
-        //pub fn get_weights(&self) -> (Vec<f64>, f64) {
-        //    (self.weights.clone(), self.bias)
-        //}
-        pub fn str(&self) {
-            println!("{}", &self)
+
+        fn get_bias(&self) -> f64 {
+            self.b
         }
     }
 }

@@ -150,7 +150,7 @@ pub mod nn {
                             println!("New Weights on epoch {} in layer {}: {:?}", e, i + 1, w_new);
                             let b_new = layer.get_weights() - self.alpha * &db[i];
                             println!("New Biases on epoch {} in layer {}: {:?}", e, i + 1, b_new);
-                            layer.set_all_weights(w_new, b_new);
+                            layer.set_all_weights(w_new, b_new, false);
                         }
                         println!("Costs: {:?}", costs);
                     }
