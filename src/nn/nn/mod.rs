@@ -8,14 +8,14 @@ pub mod nn {
         pub layers: Vec<Layer>,
         pub num_layers: usize,
         pub alpha: f64,
-        pub weights: Vec<Array2<f64>>,
+        pub weights: Vec<Array1<f64>>,
         pub biases: Vec<Array1<f64>>,
     }
 
     impl NeuralNetwork {
         pub fn new(layers: Vec<Layer>, alpha: f64) -> Self {
             let num_layers = layers.len();
-            let weights: Vec<Array2<f64>> = layers.iter().map(|layer| layer.get_weights()).collect();
+            let weights: Vec<Array1<f64>> = layers.iter().map(|layer| layer.get_weights()).collect();
             let biases: Vec<Array1<f64>> = layers.iter().map(|layer| layer.get_biases()).collect();
             Self {
                 layers,
@@ -59,12 +59,12 @@ pub mod nn {
             -sum / y_actuals.len() as f64
         }
 
-        pub fn forward_prop(&self, x: &Array2<f64>) -> (Vec<Array2<f64>>, Vec<Array2<f64>>) {
+        pub fn forward_prop(&self, x: &Array1<f64>) -> (Vec<Array1<f64>>, Vec<Array1<f64>>) {
             let m = x.shape()[1];
-            let mut a: Vec<Array2<f64>> = Vec::with_capacity(self.num_layers + 1);
-            let mut z: Vec<Array2<f64>> = Vec::with_capacity(self.num_layers + 1);
+            let mut a: Vec<Array1<f64>> = Vec::with_capacity(self.num_layers + 1);
+            let mut z: Vec<Array1<f64>> = Vec::with_capacity(self.num_layers + 1);
             a.push(x.clone());
-            z.push(Array2::zeros((0, 0))); // Dummy value
+            z.push(Array1::zeros(0)); // Dummy value
             for (i, layer) in self.layers.iter().enumerate() {
                 let input_shape: &[usize] = a[i].shape();
                 let expected_shape: (usize, usize) = if i == 0 {
@@ -72,14 +72,15 @@ pub mod nn {
                 } else {
                     (self.layers[i - 1].num_nodes, m)
                 };
-                assert_eq!(input_shape, &expected_shape, "Input shape mismatch");
-                z.push(layer.sigmoid_z(&a[i]));
-                a.push(layer.sigmoid_a(&z[i + 1]));
+                assert_eq!(&input_shape[..], &[expected_shape.0, expected_shape.1], "Input shape mismatch");
+                let z_push = layer.sigmoid_z(&a[i]);
+                z.push(z_push);
+                a.push(layer.sigmoid_z(&z[i + 1]));
                 println!("Forward Pass layer {}", i + 1);
             }
             (z, a)
         }
-
+    
         pub fn back_prop(&self, activations: &Vec<Array2<f64>>, y: &Array2<f64>) -> (Vec<Array2<f64>>, Vec<Array1<f64>>) {
             let m = y.shape()[0];
             let mut dz: Vec<Array2<f64>> = Vec::with_capacity(self.num_layers);
@@ -89,8 +90,8 @@ pub mod nn {
                 let dz_curr = if l == self.num_layers {
                     activations[l].clone() - y
                 } else {
-                    let da = self.layers[l - 1].get_weights().t().dot(&dz[self.num_layers - l]);
-                    let g_prime = activations[l].mapv(|x| x * (1.0 - x));
+                    let da: ndarray::prelude::ArrayBase<ndarray::OwnedRepr<f64>, ndarray::prelude::Dim<[usize; 1]>> = self.layers[l - 1].get_weights().t().dot(&dz[self.num_layers - l].reversed_axes());
+                    let g_prime: ndarray::prelude::ArrayBase<ndarray::OwnedRepr<f64>, ndarray::prelude::Dim<[usize; 2]>> = activations[l].mapv(|x| x * (1.0 - x));
                     da * g_prime
                 };
                 dz.push(dz_curr);
@@ -103,8 +104,8 @@ pub mod nn {
             db.reverse();
             (dw, db)
         }
-
-        pub fn gradient_descent(&mut self, cost_fun: &str, x: Array2<f64>, y: Array2<f64>, epochs: usize) {
+    
+        pub fn gradient_descent(&mut self, cost_fun: &str, x: Array1<f64>, y: Array1<f64>, epochs: usize) {
             let mut costs: Vec<f64> = Vec::new();
             match cost_fun {
                 "MSE" => {
@@ -113,21 +114,21 @@ pub mod nn {
                 "sigmoid" => {
                     for e in 0..epochs {
                         // Forward Prop
-                        let a = self.forward_prop(&x).1;
+                        let a: Vec<ndarray::prelude::ArrayBase<ndarray::OwnedRepr<f64>, ndarray::prelude::Dim<[usize; 1]>>> = self.forward_prop(&x).1;
                         // Calculate cost
                         let cost = self.sigmoid_cost(&a[a.len() - 1], &y);
                         println!("Cost on epoch {}: {}", e, cost);
                         costs.push(cost);
     
                         // Backward Prop
-                        let (d_w, d_b) = self.back_prop(&a, &y);
+                        let (d_w, d_b) = self.back_prop(&a.into_iter().map(|arr| arr.insert_axis(Axis(1))).collect(), &y.insert_axis(Axis(0)));
                         // Update weights and biases
                         for (i, layer) in self.layers.iter_mut().enumerate() {
                             let w_new = layer.get_weights() - self.alpha * &d_w[i];
                             println!("New Weights on epoch {} in layer {}: {:?}", e, i + 1, w_new);
                             let b_new = layer.get_biases() - self.alpha * &d_b[i];
                             println!("New Biases on epoch {} in layer {}: {:?}", e, i + 1, b_new);
-                            layer.set_all_weights(&w_new, &b_new);
+                            layer.set_all_weights(w_new.into_iter().map(|arr| vec![arr]).collect(), b_new.into_raw_vec());
                         }
                         println!("Costs: {:?}", costs);
                     }

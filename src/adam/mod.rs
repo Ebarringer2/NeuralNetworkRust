@@ -1,3 +1,9 @@
+// READ NOTE IN GD OBJ MOD
+
+// ADAM is something that actually does need to be implemented, so in the future this code will be fixed to work with the 
+// neural network refactors. For now, it will be commented out to avoid compiler errors.
+
+/* 
 pub mod adam {
 
     /// Adam optimization algorithm implementation
@@ -128,3 +134,4 @@ pub mod adam {
         }
     }
 }
+*/
