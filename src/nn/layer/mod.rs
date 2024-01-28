@@ -1,90 +1,85 @@
 pub mod layer {
     extern crate ndarray;
-    use ndarray::Array2;
+    use ndarray::{Array1, Axis, stack, ArrayBase, ViewRepr, Dim};
     use crate::nn::node::node::Node;
     use rand::Rng;
 
-    #[derive(Clone)]
+    #[derive(Debug)]
     pub struct Layer {
         pub nodes: Vec<Node>,
         pub num_nodes: usize,
-        pub activation_function: String,
-        pub num_weights: usize
+        pub num_weights: usize,
     }
 
     impl Layer {
-        
-        /// Creates a new Layer object with a given number of nodes
-        pub fn new(num_nodes: usize, num_features: usize, activation_function: String) -> Layer {
-            let mut rng: rand::prelude::ThreadRng = rand::thread_rng();
-            let bias: f64 = rng.gen::<f64>();
-            let nodes: Vec<Node> = (0..num_nodes).map(|_| {
-                let weights: Vec<f64> = (0..num_features).map(|_| rng.gen::<f64>()).collect();
-                Node::new(weights, bias)
-            }).collect();
-            let num_weights: usize = 0;
-            Layer {
+        pub fn new(num_nodes: usize) -> Self {
+            let weights:ndarray::prelude::ArrayBase<ndarray::OwnedRepr<f64>, ndarray::prelude::Dim<[usize; 1]>>  = Array1::from_vec(vec![rand::thread_rng().gen_range(0.0..1.0)]);
+            let b: f64 = rand::thread_rng().gen_range(0.0..1.0);
+            let nodes: Vec<Node> = (0..num_nodes).map(|_| Node::new(weights, b)).collect();
+            let num_weights: usize = if num_nodes > 0 { nodes[0].weights.len() } else { 0 };
+
+            Self {
                 nodes,
                 num_nodes,
-                activation_function,
-                num_weights
+                num_weights,
             }
-        }
-        pub fn set_weights(&mut self, index: usize, weights: Vec<f64>, bias: f64) {
-            self.nodes[index].set_weights(weights, bias)
         }
 
-        /// set_zeros paramater is for forceful error adapation, sets the weights to a vector
-        /// of 0s with a length of the layer size
-        pub fn set_all_weights(&mut self, mut weights: Vec<f64>, bias: f64, set_zeros: bool) {
-            if self.num_nodes != weights.len() {
-                if set_zeros {
-                    //println!("OVERRIDING: SETTING WEIGHTS TO VEC<0s>");
-                    weights = vec![0.0; self.num_nodes]
-                } else {
-                    //println!("WEIGHTS len: {}", weights.len());
-                    //println!("BIAS: {}", bias);
-                    //println!("LAYER size: {}", self.num_nodes);
-                    panic!("Weights and bias lists must match layer size!");
-                }
-            }
-            self.num_weights = weights.len();
+        pub fn set_weights(&mut self, index: usize, weights: Array1<f64>, bias: f64) {
+            self.nodes[index].set_weights(weights, bias);
+        }
+
+        pub fn set_all_weights(&mut self, weights: Vec<Array1<f64>>, biases: Vec<f64>) {
+            assert_eq!(weights.len(), biases.len(), "Weights and biases lists must be the same length");
+
+            self.num_weights = weights[0].len();
+
             for i in 0..self.num_nodes {
-                self.nodes[i].set_weights(weights.clone(), bias);
-                //println!("Done setting weights for Node {}", i);
+                self.nodes[i].set_weights(weights[i].clone(), biases[i]);
             }
         }
-        
-        pub fn execute(&self, input_layer: Vec<f64>) -> Vec<f64> {
-            let num_features: usize = input_layer.len();
-            let mut a_vector: Vec<f64> = Vec::new();
-            for node in &self.nodes {
-                if num_features != node.weights.len() {
-                    panic!("Number of weights does not match number of features");
-                }
-                if self.activation_function == "sigmoid" {
-                    a_vector.push(node.sigmoid_actualize(input_layer.clone()));
-                } else if self.activation_function == "reLU" {
-                    a_vector.push(node.reLU_activate(input_layer.clone()));
-                }
-            }
-            a_vector
+
+        pub fn execute_layer(&self, input_layer: &Array1<f64>) -> Array1<f64> {
+            let num_features = input_layer.len();
+
+            assert_eq!(num_features, self.num_weights, "Number of weights does not match number of features");
+
+            self.nodes
+                .iter()
+                .map(|node| node.sigmoid_actualize(input_layer))
+                .collect()
         }
+
+        pub fn dense_numpy(&self, input_layer: &Array1<f64>) -> Array1<f64> {
+            let z = self.get_weights().dot(input_layer) + self.get_biases();
+            self.sigmoid(&z)
+        }
+
+        pub fn sigmoid_z(&self, input_layer: &Array1<f64>) -> Array1<f64> {
+            self.get_weights().dot(input_layer) + self.get_biases()
+        }
+
+        pub fn sigmoid(&self, input: &Array1<f64>) -> Array1<f64> {
+            input.mapv(|x| 1.0 / (1.0 + f64::exp(-x)))
+        }
+
         pub fn print_layer(&self) {
-            for i in 0..self.num_nodes {
-                println!("Node {}: {}", i + 1, self.nodes[i])
+            for (i, node) in self.nodes.iter().enumerate() {
+                println!("Node {}: {:?}", i + 1, node);
             }
         }
-        pub fn get_nodes(&self) -> Vec<Node> {
-            self.nodes.clone()
+
+        pub fn get_weights(&self) -> Array1<f64> {
+            let weights: Vec<ArrayBase<ViewRepr<&f64>, Dim<[usize; 1]>>> = self.nodes.iter().map(|node| node.get_weights().view()).collect();
+            stack(Axis(0), weights.as_slice()).unwrap().into_dimensionality().unwrap()
+        }
+         
+        pub fn get_biases(&self) -> Array1<f64> {
+            self.nodes.iter().map(Node::get_bias).collect()
         }
 
-        pub fn get_weights(&self) -> Vec<Array2<f64>> {
-            self.nodes.iter().map(|node| node.get_weights().clone()).collect::<Vec<_>>()
-        }
-
-        pub fn get_biases(&self) -> Vec<Array2<f64>> {
-            return self.nodes.iter().map(|node| node.get_bias().clone()).collect();
+        pub fn get_nodes(&self) -> &Vec<Node> {
+            &self.nodes
         }
     }
 }

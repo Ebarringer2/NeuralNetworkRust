@@ -3,10 +3,11 @@ pub mod node {
     use ndarray::{Array1, ArrayView1};
     use std::f64::consts::E;
 
+    #[derive(Debug)]
     pub struct Node {
-        weights: Vec<f64>,
-        num_weights: usize,
-        b: f64,
+        pub weights: Array1<f64>,
+        pub num_weights: usize,
+        pub b: f64,
     }
 
     impl Clone for Node {
@@ -17,7 +18,7 @@ pub mod node {
 
 
     impl Node {
-        pub fn new(weights: Vec<f64>, b: f64) -> Self {
+        pub fn new(weights: Array1<f64>, b: f64) -> Self {
             let num_weights = weights.len();
             Node { weights, num_weights, b }
         }
@@ -98,14 +99,14 @@ pub mod node {
             0.5 * z * (1.0 + (coefficient * (z + 0.044715 * z.powi(3))).tanh())
         }
 
-        pub fn set_weights(&mut self, weights: Vec<f64>, b: f64) {
+        pub fn set_weights(&mut self, weights: Array1<f64>, b: f64) {
             self.weights = weights;
             self.b = b;
             self.num_weights = weights.len();
         }
 
-        pub fn get_weights(&self) -> &Vec<f64> {
-            &self.weights
+        pub fn get_weights(&self) -> Array1<f64> {
+            self.weights.clone()
         }
 
         pub fn get_bias(&self) -> f64 {
