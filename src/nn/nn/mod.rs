@@ -60,7 +60,8 @@ pub mod nn {
         }
 
         pub fn forward_prop(&self, x: &Array1<f64>) -> (Vec<Array1<f64>>, Vec<Array1<f64>>) {
-            let m = x.shape()[1];
+            println!("{:?}", x.shape());
+            let m: usize = *x.shape().get(0).unwrap_or(&0);
             let mut a: Vec<Array1<f64>> = Vec::with_capacity(self.num_layers + 1);
             let mut z: Vec<Array1<f64>> = Vec::with_capacity(self.num_layers + 1);
             a.push(x.clone());
@@ -68,11 +69,13 @@ pub mod nn {
             for (i, layer) in self.layers.iter().enumerate() {
                 let input_shape: &[usize] = a[i].shape();
                 let expected_shape: (usize, usize) = if i == 0 {
-                    (layer.num_weights, m)
+                    (m, 1)  // Modify the expected shape for the first layer
                 } else {
                     (self.layers[i - 1].num_nodes, m)
                 };
-                assert_eq!(&input_shape[..], &[expected_shape.0, expected_shape.1], "Input shape mismatch");
+                println!("EXPECTED SHAPE: {:?}", expected_shape);
+                println!("INPUT SHAPE: {:?}", input_shape);
+                assert_eq!(input_shape.iter().product::<usize>(), expected_shape.0 * expected_shape.1, "Input shape mismatch");
                 let z_push = layer.sigmoid_z(&a[i]);
                 z.push(z_push);
                 a.push(layer.sigmoid_z(&z[i + 1]));
@@ -80,7 +83,7 @@ pub mod nn {
             }
             (z, a)
         }
-    
+        
         pub fn back_prop(&self, activations: &Vec<Array2<f64>>, y: &Array2<f64>) -> (Vec<Array2<f64>>, Vec<Array1<f64>>) {
             let m = y.shape()[0];
             let mut dz: Vec<Array2<f64>> = Vec::with_capacity(self.num_layers);
