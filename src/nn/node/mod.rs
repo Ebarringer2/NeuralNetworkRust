@@ -12,10 +12,13 @@ pub mod node {
 
     impl Clone for Node {
         fn clone(&self) -> Self {
-            *self
+            Node {
+                weights: self.weights.clone(),
+                num_weights: self.num_weights,
+                b: self.b
+            }
         }
     }
-
 
     impl Node {
         pub fn new(weights: Array1<f64>, b: f64) -> Self {
@@ -100,9 +103,10 @@ pub mod node {
         }
 
         pub fn set_weights(&mut self, weights: Array1<f64>, b: f64) {
+            let w_clone: ndarray::prelude::ArrayBase<ndarray::OwnedRepr<f64>, ndarray::prelude::Dim<[usize; 1]>> = weights.clone();
             self.weights = weights;
             self.b = b;
-            self.num_weights = weights.len();
+            self.num_weights = w_clone.len();
         }
 
         pub fn get_weights(&self) -> Array1<f64> {

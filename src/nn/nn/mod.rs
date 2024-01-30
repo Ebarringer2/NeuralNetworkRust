@@ -91,7 +91,7 @@ pub mod nn {
                     activations[l].clone() - y
                 } else {
                     let dz_clone = dz.clone();
-                    let da: ndarray::prelude::ArrayBase<ndarray::OwnedRepr<f64>, ndarray::prelude::Dim<[usize; 1]>> = self.layers[l - 1].get_weights().t().dot(&dz_clone[self.num_layers - l].reversed_axes());
+                    let da: ndarray::prelude::ArrayBase<ndarray::OwnedRepr<f64>, ndarray::prelude::Dim<[usize; 1]>> = self.layers[l - 1].get_weights().t().dot(&dz_clone[self.num_layers - l].clone().reversed_axes().view());
                     let g_prime: ndarray::prelude::ArrayBase<ndarray::OwnedRepr<f64>, ndarray::prelude::Dim<[usize; 2]>> = activations[l].mapv(|x| x * (1.0 - x));
                     da * g_prime
                 };
@@ -124,10 +124,11 @@ pub mod nn {
                         let cost = self.sigmoid_cost(&a[a.len() - 1], &y_clone);
                         println!("Cost on epoch {}: {}", e, cost);
                         costs.push(cost);
-    
                         // Backward Prop
-                        let (d_w, d_b) = self.back_prop(&a.into_iter().map(|arr| arr.insert_axis(Axis(1))).collect(), &y_clone_2.insert_axis(Axis(0)));
-                        // Update weights and biases
+                        let (d_w, d_b) = self.back_prop(
+                            &a.into_iter().map(|arr| arr.insert_axis(Axis(1))).collect(),
+                            &y_clone_2.clone().insert_axis(Axis(0)),
+                        ); 
                         for (i, layer) in self.layers.iter_mut().enumerate() {
                             let w_new = layer.get_weights() - self.alpha * &d_w[i];
                             println!("New Weights on epoch {} in layer {}: {:?}", e, i + 1, w_new);

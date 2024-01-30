@@ -1,6 +1,6 @@
 pub mod layer {
     extern crate ndarray;
-    use ndarray::{Array1, Axis, stack, ArrayBase, ViewRepr, Dim};
+    use ndarray::Array1;
     use crate::nn::node::node::Node;
     use rand::Rng;
 
@@ -15,7 +15,7 @@ pub mod layer {
         pub fn new(num_nodes: usize) -> Self {
             let weights:ndarray::prelude::ArrayBase<ndarray::OwnedRepr<f64>, ndarray::prelude::Dim<[usize; 1]>>  = Array1::from_vec(vec![rand::thread_rng().gen_range(0.0..1.0)]);
             let b: f64 = rand::thread_rng().gen_range(0.0..1.0);
-            let nodes: Vec<Node> = (0..num_nodes).map(|_| Node::new(weights, b)).collect();
+            let nodes: Vec<Node> = (0..num_nodes).map(|_| Node::new(weights.clone(), b)).collect();
             let num_weights: usize = if num_nodes > 0 { nodes[0].weights.len() } else { 0 };
 
             Self {
@@ -70,9 +70,10 @@ pub mod layer {
         }
 
         pub fn get_weights(&self) -> Array1<f64> {
-            let weights: Vec<ArrayBase<ViewRepr<&f64>, Dim<[usize; 1]>>> = self.nodes.iter().map(|node| node.get_weights().view()).collect();
-            stack(Axis(0), weights.as_slice()).unwrap().into_dimensionality().unwrap()
+            let weights: Vec<f64> = self.nodes.iter().flat_map(|node| node.get_weights().to_vec()).collect();
+            Array1::from(weights)
         }
+        
          
         pub fn get_biases(&self) -> Array1<f64> {
             self.nodes.iter().map(Node::get_bias).collect()
