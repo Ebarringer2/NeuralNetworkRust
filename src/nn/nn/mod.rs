@@ -67,7 +67,7 @@ pub mod nn {
             a.push(x.clone());
             z.push(Array1::zeros(0)); // Dummy value
             for (i, layer) in self.layers.iter().enumerate() {
-                let input_shape: &[usize] = a[i].shape();
+                let input_shape: (usize, usize) = (*a[i].shape().get(0).unwrap_or(&0), 1);
                 let expected_shape: (usize, usize) = if i == 0 {
                     (m, 1)  // Modify the expected shape for the first layer
                 } else {
@@ -75,7 +75,8 @@ pub mod nn {
                 };
                 println!("EXPECTED SHAPE: {:?}", expected_shape);
                 println!("INPUT SHAPE: {:?}", input_shape);
-                assert_eq!(input_shape.iter().product::<usize>(), expected_shape.0 * expected_shape.1, "Input shape mismatch");
+                let input_arr: [usize; 2] = [input_shape.0, input_shape.1];
+                assert_eq!(input_arr.iter().product::<usize>(), expected_shape.0 * expected_shape.1, "Input shape mismatch");
                 let z_push = layer.sigmoid_z(&a[i]);
                 z.push(z_push);
                 a.push(layer.sigmoid_z(&z[i + 1]));

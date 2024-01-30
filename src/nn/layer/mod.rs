@@ -56,6 +56,8 @@ pub mod layer {
         }
 
         pub fn sigmoid_z(&self, input_layer: &Array1<f64>) -> Array1<f64> {
+            println!("Input layer shape:  {:?}", input_layer.shape());
+            println!("Node weights shape: {:?}", self.get_weights().shape());
             self.get_weights().dot(input_layer) + self.get_biases()
         }
 
